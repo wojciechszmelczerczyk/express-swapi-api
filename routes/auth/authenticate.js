@@ -2,8 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
-  res.send("authenticate");
-});
+// controller
+const { auth } = require("../../controllers/auth");
+
+router.post("/", auth);
 
 module.exports = router;
