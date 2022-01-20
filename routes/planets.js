@@ -2,12 +2,11 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("all planets");
-});
+// controller
+const { getAllPlanets, getPlanet } = require("../controllers/planets");
 
-router.get("/:id", (req, res) => {
-  res.send("one planet");
-});
+router.get("/", getAllPlanets);
+
+router.get("/:id", getPlanet);
 
 module.exports = router;

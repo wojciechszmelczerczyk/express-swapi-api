@@ -2,12 +2,11 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("all vehicles");
-});
+// controller
+const { getAllVehicles, getVehicle } = require("../controllers/vehicles");
 
-router.get("/:id", (req, res) => {
-  res.send("one vehicle");
-});
+router.get("/", getAllVehicles);
+
+router.get("/:id", getVehicle);
 
 module.exports = router;

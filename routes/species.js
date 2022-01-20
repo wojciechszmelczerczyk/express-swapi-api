@@ -2,12 +2,11 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("all species");
-});
+// controller
+const { getAllSpecies, getSpecies } = require("../controllers/species");
 
-router.get("/:id", (req, res) => {
-  res.send("one species");
-});
+router.get("/", getAllSpecies);
+
+router.get("/:id", getSpecies);
 
 module.exports = router;

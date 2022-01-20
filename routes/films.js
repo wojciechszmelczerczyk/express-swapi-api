@@ -2,16 +2,13 @@ const express = require("express");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("all films");
-});
+// controller
+const { getAllFilms, getFilmsStats, getFilm } = require("../controllers/films");
 
-router.get("/stats", (req, res) => {
-  res.send("films stats");
-});
+router.get("/", getAllFilms);
 
-router.get("/:id", (req, res) => {
-  res.send("one film");
-});
+router.get("/stats", getFilmsStats);
+
+router.get("/:id", getFilm);
 
 module.exports = router;
