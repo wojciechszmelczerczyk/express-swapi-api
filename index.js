@@ -1,6 +1,12 @@
 const express = require("express");
 const app = express();
 
+// db
+const db = require("./db/connection");
+
+// dotenv
+require("dotenv").config();
+
 // auth routes
 const auth = require("./routes/auth/authenticate");
 const register = require("./routes/auth/register");
@@ -19,6 +25,8 @@ const cookieParser = require("cookie-parser");
 
 // body-parser
 const bodyParser = require("body-parser");
+
+db(process.env.DB_URI);
 
 app.use(express.json());
 app.use(
