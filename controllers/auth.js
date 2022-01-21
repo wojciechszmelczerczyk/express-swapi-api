@@ -12,6 +12,7 @@ const createToken = require("../token/createToken");
 const register = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password);
     const user = await User.create({ email, password });
     res.json(user);
     return user;

@@ -259,3 +259,101 @@ const logout = async (req, res) => {
 - `/vehicles?page=1` - get page of vehicles
 
 - `/vehicles/1`- get vehicle with id 1
+
+## To run tests
+
+- `npm run test` - test both suites
+
+- `npm run test-data` - test resources endpoints
+
+- `npm run test-auth` - test authorization endpoints
+
+### Auth tests
+
+#### Flush user hook
+
+Hook which will launch before authorization tests. Find latest added user to db and delete.
+
+```javascript
+module.exports = async () => {
+  await User.findOneAndDelete({ sort: { _id: -1 } });
+};
+```
+
+Example of register route test. Using supertest with correct arbitrary data test if user is added to the database.
+
+```javascript
+test("add user to db when credentials are correct", async () => {
+  const newUser = await request(app)
+    .post("/register")
+    .send({ email: "test@gmail.com", password: "test123" });
+  const newUserCredentials = newUser.body;
+  expect(newUserCredentials.email).toBe(`test@gmail.com`);
+});
+```
+
+Example of auth route test. Using supertest with correct arbitrary data test if authentication process is correct.
+
+If so, token will be returned in response.
+
+```javascript
+test("authenticate user", async () => {
+  const user = await request(app)
+    .post("/authenticate")
+    .send({ email: "test@gmail.com", password: "test123" });
+  const token = user.body.token;
+  expect(token).not.toBe(null);
+});
+```
+
+### Get resources tests
+
+#### Get all resources
+
+Example of resources route test. When correct JWT is provided in request should return all pages of chacters which equal 9.
+
+```javascript
+test("Get people across all pages", async () => {
+  const allPeople = await request(app)
+    .get("/people")
+    .set("Cookie", `jwt=${jwt};`);
+  const numberOfPages = allPeople.body.length;
+
+  expect(numberOfPages).toBe(9);
+});
+```
+
+#### Get page of resources
+
+Example of resources route test. When correct JWT is provided in request should return page of specific resource.
+
+(in this case starships) by using query. Then we check if name of first element of page is equal to expected.
+
+```javascript
+test("Get page of starships", async () => {
+  const page = 1;
+  const starshipsFromPage1 = await request(app)
+    .get("/starships")
+    .query({ page })
+    .set("Cookie", `jwt=${jwt};`);
+
+  const nameOfFirstStarshipFromPage1 = starshipsFromPage1.body.results[0].name;
+
+  expect(nameOfFirstStarshipFromPage1).toBe("CR90 corvette");
+});
+```
+
+#### Get resource with specific id
+
+Example of resources route test. When correct JWT is provided in request should return resource with specific id.
+
+```javascript
+test("Get planet with id 1", async () => {
+  const planetId = 1;
+  const planetWithId1 = await request(app)
+    .get(`/planets/${planetId}`)
+    .set("Cookie", `jwt=${jwt};`);
+  const planetName = planetWithId1.body.name;
+  expect(planetName).toBe("Tatooine");
+});
+```
