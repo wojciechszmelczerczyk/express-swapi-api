@@ -39,7 +39,15 @@ const auth = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  res.cookie("jwt", "", {
+    maxAge: 1,
+  });
+  res.send("jwt deleted");
+};
+
 module.exports = {
   register,
   auth,
+  logout,
 };
