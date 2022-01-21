@@ -7,6 +7,9 @@ const db = require("./db/connection");
 // dotenv
 require("dotenv").config();
 
+// auth middleware
+const { requireAuth } = require("./middleware/AuthMiddleware");
+
 // auth routes
 const auth = require("./routes/auth/authenticate");
 const register = require("./routes/auth/register");
@@ -40,6 +43,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/authenticate", auth);
 app.use("/register", register);
 app.use("/logout", logout);
+
+app.get("*", requireAuth);
 
 app.use("/films", films);
 app.use("/people", people);
