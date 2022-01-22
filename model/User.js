@@ -4,6 +4,8 @@ const { Schema } = mongoose;
 
 const { isEmail } = require("validator");
 
+const bcrypt = require("bcrypt");
+
 // user schema
 const userSchema = new Schema({
   email: {
@@ -36,7 +38,7 @@ userSchema.statics.login = async function (email, password) {
     email,
   });
   if (user) {
-    const auth = await bcrypt.compare(password, this.password);
+    const auth = await bcrypt.compare(password, user.password);
     if (auth) {
       return user;
     }

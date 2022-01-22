@@ -11,7 +11,9 @@ const createToken = (id) => {
     },
     process.env.JWT_SECRET,
     {
-      expiresIN: maxAge,
+      expiresIn: maxAge,
     }
   );
 };
+
+module.exports = createToken;

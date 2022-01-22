@@ -12,7 +12,7 @@ const createToken = require("../token/createToken");
 const register = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
+    console.log(req.body);
     const user = await User.create({ email, password });
     res.json(user);
     return user;
@@ -24,7 +24,7 @@ const register = async (req, res) => {
 
 // authorize user, return jwt
 const auth = async (req, res) => {
-  const { email, body } = req.body;
+  const { email, password } = req.body;
 
   try {
     const user = await User.login(email, password);
