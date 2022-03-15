@@ -1,0 +1,104 @@
+{
+	"id": "5ee01b12-7fbe-46e9-8202-e13ac01b6ae0",
+	"values": [
+		{
+			"key": "host",
+			"value": "localhost",
+			"enabled": true
+		},
+		{
+			"key": "port",
+			"value": "80",
+			"enabled": true
+		},
+		{
+			"key": "param_name",
+			"value": "page",
+			"enabled": true
+		},
+		{
+			"key": "people",
+			"value": "people",
+			"enabled": true
+		},
+		{
+			"key": "person",
+			"value": "people/1",
+			"enabled": true
+		},
+		{
+			"key": "films",
+			"value": "films",
+			"enabled": true
+		},
+		{
+			"key": "film",
+			"value": "film/1",
+			"enabled": true
+		},
+		{
+			"key": "films_stats",
+			"value": "films/stats",
+			"enabled": true
+		},
+		{
+			"key": "planets",
+			"value": "planets",
+			"enabled": true
+		},
+		{
+			"key": "planet",
+			"value": "planets/1",
+			"enabled": true
+		},
+		{
+			"key": "species",
+			"value": "species",
+			"enabled": true
+		},
+		{
+			"key": "species_single",
+			"value": "species/1",
+			"enabled": true
+		},
+		{
+			"key": "starships",
+			"value": "starships",
+			"enabled": true
+		},
+		{
+			"key": "starship",
+			"value": "starships/2",
+			"enabled": true
+		},
+		{
+			"key": "vehicles",
+			"value": "vehicles",
+			"enabled": true
+		},
+		{
+			"key": "vehicle",
+			"value": "vehicles/4",
+			"enabled": true
+		},
+		{
+			"key": "register",
+			"value": "register",
+			"enabled": true
+		},
+		{
+			"key": "auth",
+			"value": "authenticate",
+			"enabled": true
+		},
+		{
+			"key": "logout",
+			"value": "logout",
+			"enabled": true
+		}
+	],
+	"name": "Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2022-02-09T13:52:05.872Z",
+	"_postman_exported_using": "Postman/9.12.2"
+}

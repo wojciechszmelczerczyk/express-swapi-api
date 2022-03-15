@@ -1,6 +1,23 @@
 # SWAPI middleware
 
-## Simple SWAPI middleware.
+## Simple RESTful API using Star Wars API.
+
+## Table of content
+
+- [Techstack](#techstack)
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Endpoints](#endpoints)
+
+  - [Authorization endpoints](#authorization-endpoints)
+  - [Resources endpoints](#resources-endpoints-1)
+
+- [Cache mechanism](#cache-mechanism)
+- [Auth mechanism](#jwt-auth-mechanism)
+
+- [To run tests](#to-run-tests)
+  - [Auth tests](#auth-tests)
+  - [Resources tests](#get-resources-tests)
 
 ## Techstack:
 
@@ -24,24 +41,273 @@
 
 - install `node`
 
+- install `mongodb`
+
+- install `postman`
+
 - install `docker`
 
 - install `docker-compose`
 
 ## Usage
 
-`git clone repo` - to clone repository
+### Clone repository:
 
-`npm i` - install dependencies
+```
+git clone repo
+```
 
-`docker-compose up` - to run app in containers
+### Install dependencies:
+
+```
+npm i
+```
+
+### Setup .env file
+
+```dockerfile
+# Server port
+PORT=
+
+# Mongo db uri
+DB_URI=
+
+# For testing purposes
+JWT=your_token
+
+# Pass string value
+JWT_SECRET=your_secret
+
+# Token expiration time in miliseconds, pass integer
+JWT_EXPIRATION=
+```
+
+### Run app in containers:
+
+```
+docker-compose up
+```
+
+### Setup Postman
+
+#### Import two files into Postman:
+
+- File with collection setup
+- File with global variables
+
+## Endpoints
+
+### Auth endpoints
+
+| Endpoint    | Method | Authenticated | Action            |
+| :---------- | :----: | :-----------: | :---------------- |
+| `/register` |  POST  |       -       | Register user     |
+| `/auth`     |  POST  |       -       | Authenticate user |
+| `/logout`   |  GET   |      \*       | Logout user       |
+
+### Resources endpoints
+
+| Endpoint           | Method | Authenticated | Action                |
+| :----------------- | :----: | :-----------: | :-------------------- |
+| `/resource`        |  GET   |      \*       | Get all resources     |
+| `/resource?page=1` |  GET   |      \*       | Get page of resources |
+| `/resource/1`      |  GET   |      \*       | Get resource by id    |
+
+## Resources endpoints:
+
+### SWAPI use multiple endpoints for resources, including films, planets, characters etc.
+
+### Resource means one of following:
+
+| Endpoint     | Action                   |
+| :----------- | :----------------------- |
+| `/films`     | Get Star Wars movies     |
+| `/people`    | Get Star Wars characters |
+| `/planets`   | Get Star Wars planets    |
+| `/species`   | Get Star Wars species    |
+| `/starships` | Get Star Wars starships  |
+| `/vehicles`  | Get Star Wars vehicles   |
+
+### Get all data and paginate
+
+### If page query parameter is provided response with specific page.
+
+### Otherwise fetch data across all pages with custom getAll function.
+
+```javascript
+const getAllPlanets = async (req, res) => {
+  if (req.query.page !== undefined) {
+    const paginatedPlanets = await swapi.get(
+      `https://swapi.dev/api/planets?page=${req.query.page}`
+    );
+
+    res.json(paginatedPlanets);
+    return paginatedPlanets;
+  } else {
+    const allPlanets = await getAll("https://swapi.dev/api/planets");
+    res.json(allPlanets);
+    return allPlanets;
+  }
+};
+```
+
+### Fetch first page and get information about number of items across all pages and items per page.
+
+### Calculate number of pages and fetch data across all pages. Store in array.
+
+```javascript
+try {
+  const getAll = async (url) => {
+  try {
+    let results = [];
+    let response = await swapi.get(url);
+
+    const items = response.count;
+    const elementsPerPage = response.results.length;
+
+    const numberOfPages = Math.floor(
+      (items + elementsPerPage - 1) / elementsPerPage
+    );
+
+    results = await Promise.all(
+      Array.from(Array(numberOfPages), (_, i) =>
+        swapi.get(`${url}?page=${i + 1}`)
+      )
+    );
+    return results;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+```
+
+### Get resource by id
+
+### Intercept id from request params. Fetch resource by id.
+
+```javascript
+const getPlanet = async (req, res) => {
+  const id = req.params.id;
+  const planet = await swapi.planets({ id });
+  res.json(planet);
+  return planet;
+};
+```
+
+## Authorization endpoints:
+
+### `/register` - save user to database.
+
+#### Before saving user to db hash password.
+
+```javascript
+// call a function before saving doc to db
+userSchema.pre("save", async function (next) {
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+```
+
+#### Create new user with credentials.
+
+```javascript
+const register = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(email, password);
+    const user = await User.create({
+      email,
+      password,
+    });
+    res.json(user);
+    return user;
+  } catch (err) {
+    res.json(err);
+    return err;
+  }
+};
+```
+
+#### `/auth` - generate jwt with user credentials.
+
+#### Check if user exists. If so compare hashed password from db with passed password.
+
+```javascript
+// static method to login user
+userSchema.statics.login = async function (email, password) {
+  const user = await this.findOne({
+    email,
+  });
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    }
+    throw Error("incorrect password");
+  }
+  throw Error("incorrect email");
+};
+```
+
+#### Create token.
+
+```javascript
+const createToken = (id) => {
+  return jwt.sign(
+    {
+      id,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: maxAge,
+    }
+  );
+};
+```
+
+#### Create token by passing id of user as a param. Save token in cookie.
+
+```javascript
+const auth = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.login(email, password);
+    const token = createToken(user._id);
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      expiresIn: maxAge * 1000,
+    });
+    res.json({ token });
+  } catch (err) {
+    res.json({ error: err.message });
+    return err;
+  }
+};
+```
+
+### `/logout` - delete cookie.
+
+#### By setting minimum cookie expiration date, we can delete cookie.
+
+```javascript
+const logout = async (req, res) => {
+  res.cookie("jwt", "", {
+    maxAge: 1,
+  });
+  res.send("jwt deleted");
+};
+```
 
 ## Cache mechanism
 
-Middleware for caching.
-When first request is made it will be cached for 24 hours.
+### Middleware for caching.
 
-Next requests will check if data is in the cache.
+### When first request is made it will be cached for 24 hours.
+
+### Next requests will check if data is in the cache.
 
 ```javascript
 module.exports = (duration) => (req, res, next) => {
@@ -67,7 +333,7 @@ module.exports = (duration) => (req, res, next) => {
 };
 ```
 
-Cache is applied to every GET route.
+### Cache is applied to every GET route.
 
 ```javascript
 // use cache for all routes
@@ -76,7 +342,7 @@ router.use(cache(86400));
 
 ## JWT auth mechanism
 
-Middleware to authorize requests.
+### Middleware to authorize requests.
 
 ```javascript
 const requireAuth = (req, res, next) => {
@@ -97,168 +363,12 @@ const requireAuth = (req, res, next) => {
 };
 ```
 
-JWT middleware is applied to every GET request.
+#### JWT middleware is applied to every GET request.
 
 ```javascript
 // auth middleware
 app.get("*", requireAuth);
 ```
-
-## Authorization endpoints:
-
-- `/register` - Save user to database.
-
-Before saving user to db hash password.
-
-```javascript
-// call a function before saving doc to db
-userSchema.pre("save", async function (next) {
-  const salt = await bcrypt.genSalt();
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-```
-
-Create new user with credentials.
-
-```javascript
-const register = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log(email, password);
-    const user = await User.create({
-      email,
-      password,
-    });
-    res.json(user);
-    return user;
-  } catch (err) {
-    res.json(err);
-    return err;
-  }
-};
-```
-
-- `/auth` - Generate jwt with user credentials.
-
-Check if user exists. If so compare hashed password from db with passed password.
-
-```javascript
-// static method to login user
-userSchema.statics.login = async function (email, password) {
-  const user = await this.findOne({
-    email,
-  });
-  if (user) {
-    const auth = await bcrypt.compare(password, user.password);
-    if (auth) {
-      return user;
-    }
-    throw Error("incorrect password");
-  }
-  throw Error("incorrect email");
-};
-```
-
-Create token.
-
-```javascript
-const createToken = (id) => {
-  return jwt.sign(
-    {
-      id,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: maxAge,
-    }
-  );
-};
-```
-
-Create token by passing id of user as a param. Save token in cookie.
-
-```javascript
-const auth = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.login(email, password);
-    const token = createToken(user._id);
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      expiresIn: maxAge * 1000,
-    });
-    res.json({ token });
-  } catch (err) {
-    res.json({ error: err.message });
-    return err;
-  }
-};
-```
-
-- `/logout` - Delete cookie.
-
-By setting minimum cookie expiration date, we can delete cookie.
-
-```javascript
-const logout = async (req, res) => {
-  res.cookie("jwt", "", {
-    maxAge: 1,
-  });
-  res.send("jwt deleted");
-};
-```
-
-## Resources endpoints:
-
-### People
-
-- `/people` - get all people
-
-- `/people?page=1` - get page of people
-
-- `/people/1` - get person with id 1
-
-### Films
-
-- `/films`- get all people
-
-- `/films/stats` - get films stats
-
-- `/films/1`- get film with id 1
-
-### Planets
-
-- `/planets`- get all people
-
-- `/planets?page=1` - get page of planets
-
-- `/planets/1`- get planet with id 1
-
-### Species
-
-- `/species`- get all people
-
-- `/species?page=1` - get page of species
-
-- `/species/1`- get species with id 1
-
-### Starships
-
-- `/starships`- get all people
-
-- `/starships?page=1` - get page of starships
-
-- `/starships/1`- get starship with id 1
-
-### Vehicles
-
-- `/vehicles`- get all people
-
-- `/vehicles?page=1` - get page of vehicles
-
-- `/vehicles/1`- get vehicle with id 1
 
 ## To run tests
 
@@ -272,7 +382,7 @@ const logout = async (req, res) => {
 
 #### Flush user hook
 
-Hook which will launch before authorization tests. Find latest added user to db and delete.
+#### Hook which will launch before authorization tests. Find latest added user to db and delete.
 
 ```javascript
 module.exports = async () => {
@@ -280,7 +390,7 @@ module.exports = async () => {
 };
 ```
 
-Example of register route test. Using supertest with correct arbitrary data test if user is added to the database.
+#### Example of register route test. Using supertest with correct arbitrary data test if user is added to the database.
 
 ```javascript
 test("add user to db when credentials are correct", async () => {
@@ -292,9 +402,9 @@ test("add user to db when credentials are correct", async () => {
 });
 ```
 
-Example of auth route test. Using supertest with correct arbitrary data test if authentication process is correct.
+#### Example of auth route test. Using supertest with correct arbitrary data test if authentication process is correct.
 
-If so, token will be returned in response.
+#### If so, token will be returned in response.
 
 ```javascript
 test("authenticate user", async () => {
@@ -310,7 +420,7 @@ test("authenticate user", async () => {
 
 #### Get all resources
 
-Example of resources route test. When correct JWT is provided in request should return all pages of chacters which equal 9.
+#### Example of resources route test. When correct JWT is provided in request should return all pages of chacters which equal 9.
 
 ```javascript
 test("Get people across all pages", async () => {
@@ -325,9 +435,9 @@ test("Get people across all pages", async () => {
 
 #### Get page of resources
 
-Example of resources route test. When correct JWT is provided in request should return page of specific resource.
+#### Example of resources route test. When correct JWT is provided in request should return page of specific resource.
 
-(in this case starships) by using query. Then we check if name of first element of page is equal to expected.
+#### (in this case starships) by using query. Then we check if name of first element of page is equal to expected.
 
 ```javascript
 test("Get page of starships", async () => {
@@ -345,7 +455,7 @@ test("Get page of starships", async () => {
 
 #### Get resource with specific id
 
-Example of resources route test. When correct JWT is provided in request should return resource with specific id.
+#### Example of resources route test. When correct JWT is provided in request should return resource with specific id.
 
 ```javascript
 test("Get planet with id 1", async () => {
