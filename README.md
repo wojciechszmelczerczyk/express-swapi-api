@@ -51,13 +51,19 @@
 
 ## Usage
 
-### Clone repository:
+### Navigate to project folder
+
+```sh
+cd ./express-swapi-middleware
+```
+
+### Clone repository
 
 ```
-git clone repo
+git clone https://github.com/wojciechszmelczerczyk/express-swapi-middleware
 ```
 
-### Install dependencies:
+### Install dependencies
 
 ```
 npm i
@@ -82,7 +88,7 @@ JWT_SECRET=your_secret
 JWT_EXPIRATION=
 ```
 
-### Run app in containers:
+### Run app in containers
 
 ```
 docker-compose up
@@ -90,49 +96,48 @@ docker-compose up
 
 ### Setup Postman
 
-#### Import two files into Postman:
+#### Import two files into Postman
 
-- File with collection setup
-- File with global variables
+- [File with collection setup](./postman/swapi-middleware-express.postman_collection.json)
+- [File with global variables](./postman/workspace.postman_globals.json)
 
 ## Endpoints
 
 ### Auth endpoints
 
-| Endpoint    | Method | Authenticated | Action            |
-| :---------- | :----: | :-----------: | :---------------- |
-| `/register` |  POST  |       -       | Register user     |
-| `/auth`     |  POST  |       -       | Authenticate user |
-| `/logout`   |  GET   |      \*       | Logout user       |
+| Method |          Endpoint           |
+| :----: | :-------------------------: |
+|  POST  | [`/register`](./docs/auth/) |
+|  POST  |   [`/auth`](./docs/auth/)   |
+|  GET   |  [`/logout`](./docs/auth/)  |
 
 ### Resources endpoints
 
-| Endpoint           | Method | Authenticated | Action                |
-| :----------------- | :----: | :-----------: | :-------------------- |
-| `/resource`        |  GET   |      \*       | Get all resources     |
-| `/resource?page=1` |  GET   |      \*       | Get page of resources |
-| `/resource/1`      |  GET   |      \*       | Get resource by id    |
+| Method |              Endpoint               |
+| :----: | :---------------------------------: |
+|  GET   |   [`/resource`](./docs/resource/)   |
+|  GET   | [`/resource/:id`](./docs/resource/) |
 
-## Resources endpoints:
+### Resources
 
-### SWAPI use multiple endpoints for resources, including films, planets, characters etc.
+SWAPI use multiple endpoints for resources, including films, planets, characters etc.
 
-### Resource means one of following:
+Resource means one of following:
 
-| Endpoint     | Action                   |
-| :----------- | :----------------------- |
-| `/films`     | Get Star Wars movies     |
-| `/people`    | Get Star Wars characters |
-| `/planets`   | Get Star Wars planets    |
-| `/species`   | Get Star Wars species    |
-| `/starships` | Get Star Wars starships  |
-| `/vehicles`  | Get Star Wars vehicles   |
+|  Resources   |
+| :----------: |
+|   `/films`   |
+|  `/people`   |
+|  `/planets`  |
+|  `/species`  |
+| `/starships` |
+| `/vehicles`  |
 
-### Get all data and paginate
+Get all data and paginate
 
-### If page query parameter is provided response with specific page.
+If page query parameter is provided response with specific page.
 
-### Otherwise fetch data across all pages with custom getAll function.
+Otherwise fetch data across all pages with custom getAll function.
 
 ```javascript
 const getAllPlanets = async (req, res) => {
@@ -151,9 +156,9 @@ const getAllPlanets = async (req, res) => {
 };
 ```
 
-### Fetch first page and get information about number of items across all pages and items per page.
+Fetch first page and get information about number of items across all pages and items per page.
 
-### Calculate number of pages and fetch data across all pages. Store in array.
+Calculate number of pages and fetch data across all pages. Store in array.
 
 ```javascript
 try {
@@ -182,9 +187,9 @@ try {
 
 ```
 
-### Get resource by id
+Get resource by id
 
-### Intercept id from request params. Fetch resource by id.
+Intercept id from request params. Fetch resource by id.
 
 ```javascript
 const getPlanet = async (req, res) => {
@@ -199,7 +204,7 @@ const getPlanet = async (req, res) => {
 
 ### `/register` - save user to database.
 
-#### Before saving user to db hash password.
+Before saving user to db hash password.
 
 ```javascript
 // call a function before saving doc to db
@@ -210,7 +215,7 @@ userSchema.pre("save", async function (next) {
 });
 ```
 
-#### Create new user with credentials.
+Create new user with credentials.
 
 ```javascript
 const register = async (req, res) => {
@@ -230,9 +235,9 @@ const register = async (req, res) => {
 };
 ```
 
-#### `/auth` - generate jwt with user credentials.
+`/auth` - generate jwt with user credentials.
 
-#### Check if user exists. If so compare hashed password from db with passed password.
+Check if user exists. If so compare hashed password from db with passed password.
 
 ```javascript
 // static method to login user
@@ -363,7 +368,7 @@ const requireAuth = (req, res, next) => {
 };
 ```
 
-#### JWT middleware is applied to every GET request.
+JWT middleware is applied to every GET request.
 
 ```javascript
 // auth middleware
@@ -380,9 +385,9 @@ app.get("*", requireAuth);
 
 ### Auth tests
 
-#### Flush user hook
+Flush user hook
 
-#### Hook which will launch before authorization tests. Find latest added user to db and delete.
+Hook which will launch before authorization tests. Find latest added user to db and delete.
 
 ```javascript
 module.exports = async () => {
@@ -390,7 +395,7 @@ module.exports = async () => {
 };
 ```
 
-#### Example of register route test. Using supertest with correct arbitrary data test if user is added to the database.
+Example of register route test. Using supertest with correct arbitrary data test if user is added to the database.
 
 ```javascript
 test("add user to db when credentials are correct", async () => {
@@ -402,9 +407,9 @@ test("add user to db when credentials are correct", async () => {
 });
 ```
 
-#### Example of auth route test. Using supertest with correct arbitrary data test if authentication process is correct.
+Example of auth route test. Using supertest with correct arbitrary data test if authentication process is correct.
 
-#### If so, token will be returned in response.
+If so, token will be returned in response.
 
 ```javascript
 test("authenticate user", async () => {
@@ -418,9 +423,9 @@ test("authenticate user", async () => {
 
 ### Get resources tests
 
-#### Get all resources
+Get all resources
 
-#### Example of resources route test. When correct JWT is provided in request should return all pages of chacters which equal 9.
+Example of resources route test. When correct JWT is provided in request should return all pages of chacters which equal 9.
 
 ```javascript
 test("Get people across all pages", async () => {
@@ -435,9 +440,9 @@ test("Get people across all pages", async () => {
 
 #### Get page of resources
 
-#### Example of resources route test. When correct JWT is provided in request should return page of specific resource.
+Example of resources route test. When correct JWT is provided in request should return page of specific resource.
 
-#### (in this case starships) by using query. Then we check if name of first element of page is equal to expected.
+(in this case starships) by using query. Then we check if name of first element of page is equal to expected.
 
 ```javascript
 test("Get page of starships", async () => {
@@ -453,9 +458,9 @@ test("Get page of starships", async () => {
 });
 ```
 
-#### Get resource with specific id
+Get resource with specific id
 
-#### Example of resources route test. When correct JWT is provided in request should return resource with specific id.
+Example of resources route test. When correct JWT is provided in request should return resource with specific id.
 
 ```javascript
 test("Get planet with id 1", async () => {
