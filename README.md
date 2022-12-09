@@ -105,18 +105,18 @@ docker-compose up
 
 ### Auth endpoints
 
-| Method |          Endpoint           |
-| :----: | :-------------------------: |
-|  POST  | [`/register`](./docs/auth/) |
-|  POST  |   [`/auth`](./docs/auth/)   |
-|  GET   |  [`/logout`](./docs/auth/)  |
+| Method |                Endpoint                |
+| :----: | :------------------------------------: |
+|  POST  | [`/register`](./docs/auth/register.md) |
+|  POST  |    [`/auth`](./docs/auth/login.md)     |
+|  GET   |    [`/logout`](./docs/auth/get.md)     |
 
 ### Resources endpoints
 
-| Method |              Endpoint               |
-| :----: | :---------------------------------: |
-|  GET   |   [`/resource`](./docs/resource/)   |
-|  GET   | [`/resource/:id`](./docs/resource/) |
+| Method |                   Endpoint                    |
+| :----: | :-------------------------------------------: |
+|  GET   |     [`/resource`](./docs/resource/get.md)     |
+|  GET   | [`/resource/:id`](./docs/resource/getById.md) |
 
 ### Resources
 
